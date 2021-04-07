@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+
+    <title>TUBAFSpy</title>
+</head>
+<body>
+    <div id="app">
+        <input placeholder="Link oder ID eingeben" v-model="content">
+
+
+        <button class="btn" v-on:click="previousId">Vorherige Seite</button>
+        <button class="btn" v-on:click="nextId">Nächste Seite</button>
+        <button class="btn" v-on:click="getIdFromContent">Seite mit ID {{idFromContent}} öffnen</button> <br>
+
+        <br>
+        <a v-bind:href="link">{{link}}</a>
+        <br>
+        <iframe v-bind:src="link" width="282" height="184" frameborder="0" allowfullscreen="allowfullscreen"></iframe><script src="https://blogs.hrz.tu-freiberg.de/interaktive-inhalte/wp-content/plugins/h5p/h5p-php-library/js/h5p-resizer.js" charset="UTF-8"></script>
+    </div>
+
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                id: 1,
+                content: ""
+            },
+            methods: {
+                nextId: function () {
+                    this.id++
+                },
+                previousId: function () {
+                    if(this.id > 1)
+                        this.id--
+                },
+                getIdFromContent: function(){
+                    this.id = this.idFromContent
+                }
+            },
+            computed: {
+                link: function (){
+                    return "https://blogs.hrz.tu-freiberg.de/interaktive-inhalte/wp-admin/admin-ajax.php?action=h5p_embed&id=" + this.id
+                },
+                idFromContent: function(){
+                    var ids = this.content.match("id=([0-9]+)")
+                    var id = 1
+                    if(ids){
+                        id = ids[1]
+                    } else {
+                        ids = this.content.match("^[0-9]+$")
+                        id = (ids)? ids[0] : 1
+                    }
+                    if(id < 1) id = 1
+                    return id
+                }
+            }       
+        })
+    </script>
+</body>
+</html>
