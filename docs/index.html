@@ -1,30 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="https://unpkg.com/vue-router@3"></script>
 
     <title>TUBAFSpy</title>
 </head>
-<body>
-    <div id="app">
-        <input placeholder="Link oder ID eingeben" v-model="content">
 
+<body style="background-color: rgb(53, 53, 53);">
+    <div class="rows" id="app">
+        <input placeholder="Link oder ID eingeben" v-model="content">
 
         <button class="btn" v-on:click="previousId">Vorherige Seite</button>
         <button class="btn" v-on:click="nextId">Nächste Seite</button>
         <button class="btn" v-on:click="getIdFromContent">Seite mit ID {{idFromContent}} öffnen</button> <br>
-
         <br>
         <a v-bind:href="link">{{link}}</a>
-        <br>
-        <iframe v-bind:src="link" width="282" height="184" frameborder="0" allowfullscreen="allowfullscreen"></iframe><script src="https://blogs.hrz.tu-freiberg.de/interaktive-inhalte/wp-content/plugins/h5p/h5p-php-library/js/h5p-resizer.js" charset="UTF-8"></script>
+        <iframe v-bind:src="link" allowfullscreen="allowfullscreen" style="height: 100%; width: 100%;"></iframe>
+        <script
+            src="https://blogs.hrz.tu-freiberg.de/interaktive-inhalte/wp-content/plugins/h5p/h5p-php-library/js/h5p-resizer.js"
+            charset="UTF-8">
+        </script>
     </div>
 
     <script>
+        const routes = [{
+                path: '/:page',
+                name: 'pathWithIds',
+                component: app
+            },
+            {
+                path: "/:catchAll(.*)",
+                redirect: {
+                    name: 'pathWithIds',
+                    params: {
+                        page: 1
+                    }
+                }
+            }
+        ];
+
+        var router = new VueRouter({
+            routes,
+        })
+
+
         var app = new Vue({
+            router,
             el: '#app',
             data: {
                 id: 1,
@@ -35,31 +61,60 @@
                     this.id++
                 },
                 previousId: function () {
-                    if(this.id > 1)
+                    if (this.id > 1)
                         this.id--
                 },
-                getIdFromContent: function(){
+                getIdFromContent: function () {
                     this.id = this.idFromContent
                 }
             },
             computed: {
-                link: function (){
-                    return "https://blogs.hrz.tu-freiberg.de/interaktive-inhalte/wp-admin/admin-ajax.php?action=h5p_embed&id=" + this.id
+                link: function () {
+                    return "https://blogs.hrz.tu-freiberg.de/interaktive-inhalte/wp-admin/admin-ajax.php?action=h5p_embed&id=" +
+                        this.id
                 },
-                idFromContent: function(){
+                idFromContent: function () {
                     var ids = this.content.match("id=([0-9]+)")
                     var id = 1
-                    if(ids){
+                    if (ids) {
                         id = ids[1]
                     } else {
                         ids = this.content.match("^[0-9]+$")
-                        id = (ids)? ids[0] : 1
+                        id = (ids) ? ids[0] : 1
                     }
-                    if(id < 1) id = 1
+                    if (id < 1) id = 1
                     return id
+                },
+                title: function () {
+                    return "TUBAFSpy - " + this.id
                 }
-            }       
+            },
+            watch: {
+                '$route.params.page': function (newVal, oldVal) {
+                    var id = Number.parseInt(newVal);
+
+                    this.id = (Number.isNaN(id) || id < 1) ? 1 : id
+                },
+                'id': {
+                    immediate: true,
+                    handler() {
+                        this.$router.push({
+                            name: 'pathWithIds',
+                            params: {
+                                page: this.id
+                            }
+                        }).catch(() => {});
+                    }
+                },
+                'title': {
+                    immediate: true,
+                    handler() {
+                        document.title = this.title
+                    }
+                }
+            }
         })
     </script>
 </body>
+
 </html>
