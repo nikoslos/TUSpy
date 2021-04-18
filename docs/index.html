@@ -90,13 +90,15 @@
                 }
             },
             watch: {
-                '$route.params.page': function (newVal, oldVal) {
-                    var id = Number.parseInt(newVal);
-
-                    this.id = (Number.isNaN(id) || id < 1) ? 1 : id
+                '$route.params.page': {
+                    immediate: true,
+                    handler() {
+                        var id = Number.parseInt(this.$route.params.page);
+                        this.id = (Number.isNaN(id) || id < 1) ? 1 : id
+                    }
                 },
                 'id': {
-                    immediate: true,
+                    immediate: false,
                     handler() {
                         this.$router.push({
                             name: 'pathWithIds',
