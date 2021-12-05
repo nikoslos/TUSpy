@@ -9,39 +9,47 @@
     <script src="https://unpkg.com/vue-router@3"></script>
 
     <title>TUBAFSpy</title>
+    <style>
+        .iframe-frame {
+            max-width: 50% !important;
+            max-height: calc(100% - 200px) !important;
+            /*height: calc(100% - 2000px) !important;*/
+
+        }
+    </style>
 </head>
 
 <body style="background-color: rgb(53, 53, 53);">
-    <div class="rows" id="app">
+    <div @resize="handleResize" class="rows" id="app">
         <input placeholder="Link oder ID eingeben" v-model="content">
 
         <button class="btn" v-on:click="previousId">Vorherige Seite</button>
         <button class="btn" v-on:click="nextId">Nächste Seite</button>
         <button class="btn" v-on:click="getIdFromContent">Seite mit ID {{idFromContent}} öffnen</button> <br>
         <br>
-        <a v-bind:href="link">{{link}}</a>
-        <iframe v-bind:src="link" allowfullscreen="allowfullscreen" style="height: 100%; width: 100%;"></iframe>
+        <a v-bind:href="link">{{link}}</a><br>
+        <iframe v-bind:src="link" allowfullscreen="allowfullscreen" class="iframe-frame"></iframe>
         <script
             src="https://blogs.hrz.tu-freiberg.de/interaktive-inhalte/wp-content/plugins/h5p/h5p-php-library/js/h5p-resizer.js"
             charset="UTF-8">
-        </script>
+            </script>
     </div>
 
     <script>
         const routes = [{
-                path: '/:page',
+            path: '/:page',
+            name: 'pathWithIds',
+            component: app
+        },
+        {
+            path: "/:catchAll(.*)",
+            redirect: {
                 name: 'pathWithIds',
-                component: app
-            },
-            {
-                path: "/:catchAll(.*)",
-                redirect: {
-                    name: 'pathWithIds',
-                    params: {
-                        page: 1
-                    }
+                params: {
+                    page: 1
                 }
             }
+        }
         ];
 
         var router = new VueRouter({
@@ -66,6 +74,9 @@
                 },
                 getIdFromContent: function () {
                     this.id = this.idFromContent
+                },
+                handleResize(event) {
+                    console.log("Resize", event)
                 }
             },
             computed: {
@@ -105,7 +116,7 @@
                             params: {
                                 page: this.id
                             }
-                        }).catch(() => {});
+                        }).catch(() => { });
                     }
                 },
                 'title': {
@@ -114,6 +125,12 @@
                         document.title = this.title
                     }
                 }
+            },
+            created() {
+                window.addEventListener("resize", this.handleResize);
+            },
+            destroyed() {
+                window.removeEventListener("resize", this.handleResize);
             }
         })
     </script>
